@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build-extension:
     strategy:
@@ -16,9 +19,14 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
       - run: npm install --global --force corepack@latest && corepack enable && corepack prepare pnpm@10.10.0 --activate
@@ -34,13 +42,13 @@ jobs:
           TARGET=chrome pnpm build && cd ./dist && zip -r ../extension.chrome.zip . && cd .. && rm -rf dist
           TARGET=firefox pnpm build && cd ./dist && zip -r ../extension.firefox.zip . && cd .. && rm -rf dist
       - name: upload chrome extension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: chrome-extension
           path: |
             ./packages/browser-extension/extension.chrome.zip
       - name: upload firefox extension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: firefox-extension
           path: |
